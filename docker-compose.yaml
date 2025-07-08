@@ -8,7 +8,8 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_PORT: ${DB_PORT}
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
@@ -30,14 +31,19 @@ services:
       - .env
   
   tg_bot:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: assistbot
     restart: always
     volumes:
       - .:/app
-    command: python -m assitBot.main
+    working_dir: /app/assistBot
+    command: python main.py
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - tg_bot
   
   # userbot:
   #   build: ./assistBot

@@ -8,6 +8,7 @@ COPY requirements.txt /app
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY assistBot /app/assistBot
+COPY userbot /app/userbot
 
-CMD ["python", "assistBot.main"]
+CMD ["python", "main.py"]
