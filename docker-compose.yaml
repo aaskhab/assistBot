@@ -1,0 +1,64 @@
+services:
+  
+  db:
+    image: postgres
+    container_name: ${PG_CONTAINER_NAME}
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PORT: ${DB_PORT}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - tg_bot
+      # - userbot
+    env_file:
+      - .env
+
+  redis_cache:
+    image: redis:6.2-alpine
+    container_name: redis
+    restart: always
+    command: redis-server --port ${REDIS_PORT} --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ./cache:/data
+    ports:
+      - "6379:6379"
+    env_file:
+      - .env
+  
+  tg_bot:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: assistbot
+    restart: always
+    volumes:
+      - .:/app
+    command: python -m assitBot.main
+  
+  # userbot:
+  #   build: ./assistBot
+  #   container_name: userbot
+  #   restart: always
+  #   volumes:
+  #     - ./userbot:/app
+  #   depends_on:
+  #     - tg_bot
+  
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    networks:
+      - tg_bot
+
+networks:
+  tg_bot: {}
+  userbot: {}
+
+volumes:
+  pgdata: {}
