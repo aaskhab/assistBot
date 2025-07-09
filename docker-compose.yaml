@@ -20,7 +20,7 @@ services:
 
   redis_cache:
     image: redis:6.2-alpine
-    container_name: redis
+    container_name: redis_cache
     restart: always
     command: redis-server --port ${REDIS_PORT} --requirepass ${REDIS_PASSWORD}
     volumes:
@@ -42,17 +42,27 @@ services:
       - .env
     depends_on:
       - db
+      - redis_cache
+    environment:
+      REDIS_URL: redis://redis_cache:6379/0
     networks:
       - tg_bot
   
-  # userbot:
-  #   build: ./assistBot
-  #   container_name: userbot
-  #   restart: always
-  #   volumes:
-  #     - ./userbot:/app
-  #   depends_on:
-  #     - tg_bot
+  userbot:
+    build: .
+    container_name: userbot
+    restart: always
+    volumes:
+      - .:/app
+    depends_on:
+      - tg_bot
+      - db
+    working_dir: /app
+    command: python -m userbot.main
+    environment:
+      - PYTHONPATH=/app
+    networks:
+      - tg_bot
   
   adminer:
     image: adminer
